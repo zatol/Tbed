@@ -123,8 +123,8 @@
                                 arr.push(data[i].albumkey)
                             }
                             delall(arr);
-                            table.reload('dates');//重新获取表数据
                             layer.close(index);
+                            table.reload('dates');//重新获取表数据
                         }, function(){
                         });
                         //layer.alert(JSON.stringify(data));
@@ -156,6 +156,7 @@
                 success: function (data) {
                     if (data > 0) {
                         layer.msg('删除成功', {icon: 1});
+                        table.reload('dates');
                     }
                 }
             });

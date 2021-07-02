@@ -5,7 +5,7 @@ $(function () {
         dataType: "json",
         success: function (data) {
             if(data.lgoinret==1){
-                bodys();
+                bodys(data.username);
             }else{
 
             }
@@ -13,12 +13,10 @@ $(function () {
     });
 });
 
-function bodys() {
-    var h = '<li class="active"><a class="menu-link" data-section="home" data-nav-title="home"\n' +
-        '                    data-section-pos="0" data-section-posy="0">Home <i class="fa fa-fw fa-home"></i>\n' +
-        '                </a></li>';
-    var h1 = '<li><a class="menu-link" target="_blank" href="/admin/goadmin" id="usernames">控制面板&nbsp;<i class="fa fa-fw fa-list"></i></a></li>';
-    var h2 = '<li><a class="menu-link" href="javascript:exit();"  onclick="">退出&nbsp;<span class="glyphicon glyphicon-log-out"></span></a></li>';
+function bodys(username) {
+    var h = '';//<li class="active"><a class="menu-link" data-section="home" data-nav-title="home" data-section-pos="0" data-section-posy="0">'+username+'<i class="fa fa-fw fa-user"></i></a></li>
+    var h1 = '<li><a class="menu-link" target="_blank" href="/admin/goadmin" id="usernames">控制台&nbsp;<i class="fa fa-fw fa-list"></i></a></li>';
+    var h2 = '<li><a class="menu-link" style="cursor: pointer;"  onclick="exit()">退&nbsp;出&nbsp;<span class="glyphicon glyphicon-log-out"></span></a></li>';
     $("#usersrc").html(h + h1 + h2);
 }
 
@@ -215,7 +213,8 @@ function urlimg(result) {
                 icon: 16
                 ,shade: 0.01
             });
-            qq = GetDateStr(new Date());
+            //qq = GetDateStr(new Date());
+            qq = $('#vu').val();
             $('#loadingModal').modal({backdrop: 'static', keyboard: false,upurlk:qq});
             $.ajax({
                 type: "POST",

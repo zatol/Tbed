@@ -91,20 +91,13 @@ public class AlbumController {
 
             imgAndAlbum.setImgname(imgarr[i]);
             imgAndAlbum.setAlbumkey(uuid);
+            imgAndAlbum.setNotes(aboutarr[i]);
             if(temp==0){
                 temp2 = albumServiceI.addAlbum(album);
                 temp = 1;
             }
             if(temp2>0){
                 ret = albumServiceI.addAlbumForImgAndAlbumMapper(imgAndAlbum);
-                Images images = new Images();
-                if(aboutarr.length>0){
-                    images.setExplains(aboutarr[i]);
-                }else{
-                    images.setExplains("");
-                }
-                images.setImgname(imgarr[i]);
-                imgService.setImg(images);
             }
         }
         if(ret>0){

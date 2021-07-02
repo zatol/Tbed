@@ -4,9 +4,16 @@ import cn.hellohao.pojo.*;
 import cn.hellohao.service.*;
 import cn.hellohao.service.impl.*;
 import cn.hellohao.utils.*;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -50,6 +57,8 @@ public class UpdateImgController {
 
     private String[] iparr;
 
+    public static String vu;
+
     @RequestMapping({"/", "/index"})
     public String indexImg(Model model, HttpSession httpSession, HttpServletRequest request, HttpServletResponse response) {
             Print.Normal("当前项目路径："+System.getProperty("user.dir"));
@@ -91,7 +100,8 @@ public class UpdateImgController {
                 isupdate = (u == null) ? 0: 1;
             }
             model.addAttribute("VisitorUpload", isupdate);
-
+            vu = IdUtil.simpleUUID();
+            model.addAttribute("vu",vu);
             if(config.getTheme()==1){
                 return "index";
             }else{
@@ -145,7 +155,8 @@ public class UpdateImgController {
             java.text.DateFormat dateFormat = new java.text.SimpleDateFormat("yyyy/MM/dd");
             userpath = dateFormat.format(new Date());
         }
-        if(Integer.parseInt(Base64Encryption.decryptBASE64(upurlk))!=yzupdate()){
+        //if(Integer.parseInt(Base64Encryption.decryptBASE64(upurlk))!=yzupdate()){
+        if (!upurlk.equals(UpdateImgController.vu)) {
             jsonArray.add(-403);
             return jsonArray.toString();
         }
@@ -154,12 +165,12 @@ public class UpdateImgController {
         Integer youke = uploadConfig.getFilesizetourists();
         Integer yonghu = uploadConfig.getFilesizeuser();
         String uuid= UUID.randomUUID().toString().replace("-", "");
-        Boolean bo =false;
-        bo = Sourcekey==5?true:StringUtils.doNull(Sourcekey,key);
-        if(!bo){
-            jsonArray.add(-1);
-            return jsonArray.toString();
-        }
+        //Boolean bo =false;
+        //bo = Sourcekey==5?true:StringUtils.doNull(Sourcekey,key);
+//        if(!bo){
+//            jsonArray.add(-1);
+//            return jsonArray.toString();
+//        }
         Print.warning("上传地址是："+request.getSession().getServletContext().getRealPath("/")+"/hellohaotmp/");
 
         if(usermemory/1024>=memory) {
@@ -327,48 +338,45 @@ public class UpdateImgController {
 
 
     @RequestMapping("/{key1}/TOIMG{key2}N.{key3}")
-    public void selectByFy(HttpServletRequest request, HttpServletResponse response,
-                             @PathVariable("key1") String key1, @PathVariable("key2") String key2,
+    public ResponseEntity<Object> selectByFyOne(final HttpServletRequest request,
+                                                HttpServletResponse response,
+                                                @PathVariable("key1") String key1, @PathVariable("key2") String key2,
                              @PathVariable("key3") String key3, Model model){
-        String head = "jpg";
-        if(key3.equals("jpg")||key3.equals("jpeg")){
-            head = "jpeg";
-        }else if(key3.equals("png")){
-            head = "png";
-        }else if(key3.equals("bmp")){
-            head = "bmp";
-        }else if(key3.equals("gif")){
-            head = "gif";
-        }else{
-            head = key3;
-        }
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Cache-Control", "no-cache");
-        response.setDateHeader("Expires", 0);
-        response.setContentType("image/"+head);
-        InputStream is= null;
-        BufferedImage bi=null;
-        try {
-            is = new FileInputStream(new File(File.separator+"HellohaoData"+File.separator+key1+"/TOIMG"+key2+"N."+key3));
-            bi= ImageIO.read(is);
-            is.close();
-            //将图片输出给浏览器
-            BufferedImage image = (bi) ;
-            OutputStream os = response.getOutputStream();
-            ImageIO.write(image, head, os);
-        } catch (Exception e) {
-            Print.warning("寻找本地文件出错："+e.getMessage());
-            e.printStackTrace();
+        MediaType mediaType =null;
+        File file = new File(File.separator+"HellohaoData"+File.separator+key1+"/TOIMG"+key2+"N."+key3);
+        if (!file.exists()) {
             try {
                 response.sendRedirect("/404");
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("<h1>404 FILE NOT FOUND</h1>");
             }
         }
+        if(key3.equals("png")){
+            mediaType = MediaType.IMAGE_PNG;
+        }else if(key3.equals("gif")){
+            mediaType = MediaType.IMAGE_GIF;
+        }else{
+            mediaType = MediaType.IMAGE_JPEG;
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        // headers.setContentDispositionFormData("attachment", URLUtil.encode(file.getName()));
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        headers.add("Last-Modified", new Date().toString());
+        headers.add("ETag", String.valueOf(System.currentTimeMillis()));
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentLength(file.length())
+                .contentType(mediaType)
+                .body(new FileSystemResource(file));
+
         //return "forward:/links/"+key1+"/TOIMG"+key2+"N."+key3;
     }
 
-    @RequestMapping("/{key1:\\d+}/{key2}/{key3}/TOIMG{key4}N.{key5}")
+   // @RequestMapping("/{key1:\\d+}/{key2}/{key3}/TOIMG{key4}N.{key5}")
     public void selectByFy2(HttpServletRequest request, HttpServletResponse response,
                               @PathVariable("key1") String key1,@PathVariable("key2") String key2,
                               @PathVariable("key3") String key3,@PathVariable("key4") String key4,
@@ -389,12 +397,12 @@ public class UpdateImgController {
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
         response.setContentType("image/"+head);
-        InputStream is= null;
+        //InputStream is= null;
         BufferedImage bi=null;
         try {
-            is = new FileInputStream(new File(File.separator+"HellohaoData"+File.separator+key1+"/"+key2+"/"+key3+"/TOIMG"+key4+"N."+key5));
-            bi= ImageIO.read(is);
-            is.close();
+            //is = new FileInputStream(new File(File.separator+"HellohaoData"+File.separator+key1+"/"+key2+"/"+key3+"/TOIMG"+key4+"N."+key5));
+            bi= ImageIO.read(new File(File.separator+"HellohaoData"+File.separator+key1+"/"+key2+"/"+key3+"/TOIMG"+key4+"N."+key5));
+            //is.close();
             //将图片输出给浏览器
             BufferedImage image = (bi) ;
             OutputStream os = response.getOutputStream();
@@ -408,23 +416,47 @@ public class UpdateImgController {
                 ex.printStackTrace();
             }
         }
+    }
 
-
-
-/*        InputStream is= null;
-        BufferedImage bi=null;
-            is = new FileInputStream(new File(File.separator+"HellohaoData"+File.separator+key1+"/"+key2+"/"+key3+"/TOIMG"+key4+"N."+key5));
-            bi= ImageIO.read(is);
-            is.close();
-
-        //将验证码存入Session
-        //将图片输出给浏览器
-        BufferedImage image = (bi) ;
-        response.setContentType("image/JPEG");
-        OutputStream os = response.getOutputStream();
-        ImageIO.write(image, "JPEG", os);*/
-
-
+    @GetMapping("/{key1:\\d+}/{key2}/{key3}/TOIMG{key4}N.{key5}")
+    @ResponseBody
+    public ResponseEntity<Object> selectByFyTow(final HttpServletRequest request,
+                                                 HttpServletResponse response,
+                                                @PathVariable("key1") String key1,
+                                                 @PathVariable("key2") String key2,
+                                                @PathVariable("key3") String key3,
+                                                 @PathVariable("key4") String key4,
+                                                @PathVariable("key5") String key5) {
+        MediaType mediaType =null;
+        File file = new File(File.separator+"HellohaoData"+File.separator+key1+"/"+key2+"/"+key3+"/TOIMG"+key4+"N."+key5);
+        if (!file.exists()) {
+            try {
+                response.sendRedirect("/404");
+            } catch (IOException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("<h1>404 FILE NOT FOUND</h1>");
+            }
+        }
+         if(key5.equals("png")){
+            mediaType = MediaType.IMAGE_PNG;
+        }else if(key5.equals("gif")){
+            mediaType = MediaType.IMAGE_GIF;
+        }else{
+             mediaType = MediaType.IMAGE_JPEG;
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        // headers.setContentDispositionFormData("attachment", URLUtil.encode(file.getName()));
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        headers.add("Last-Modified", new Date().toString());
+        headers.add("ETag", String.valueOf(System.currentTimeMillis()));
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentLength(file.length())
+                .contentType(mediaType)
+                .body(new FileSystemResource(file));
     }
 
     private Integer yzupdate(){

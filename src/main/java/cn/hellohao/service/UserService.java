@@ -3,9 +3,11 @@ package cn.hellohao.service;
 import cn.hellohao.pojo.Images;
 import cn.hellohao.pojo.User;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface UserService {
     //注册
     Integer register(User user);

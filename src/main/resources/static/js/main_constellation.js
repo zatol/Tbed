@@ -368,11 +368,17 @@ TABLE OF CONTENTS
         //-- 6.16 activate single image background + star effect (constellation)
         else if ($.bg_type == 3) {
             $(".bg-container").backstretch([
-				$.bg_urls
-			], {
-			    duration: 6000,
-			    fade: 'normal'
-			});
+                $.bg_urls
+            ], {
+                duration: 6000,
+                fade: 'normal'
+            });
+            $(".bg-container-static").backstretch([
+                $.bg_urls
+            ], {
+                duration: 6000,
+                fade: 'normal'
+            });
 
             var canvas = '<canvas id="bg-canvas"> </canvas>';
             $('.bg-container').prepend(canvas);

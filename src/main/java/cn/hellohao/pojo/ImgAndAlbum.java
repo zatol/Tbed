@@ -8,13 +8,15 @@ package cn.hellohao.pojo;
 public class ImgAndAlbum {
     private String imgname;
     private String albumkey;
+    private String notes;
 
     public ImgAndAlbum() {
     }
 
-    public ImgAndAlbum(String imgname, String albumkey) {
+    public ImgAndAlbum(String imgname, String albumkey, String notes) {
         this.imgname = imgname;
         this.albumkey = albumkey;
+        this.notes = notes;
     }
 
     public String getImgname() {
@@ -31,5 +33,13 @@ public class ImgAndAlbum {
 
     public void setAlbumkey(String albumkey) {
         this.albumkey = albumkey;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

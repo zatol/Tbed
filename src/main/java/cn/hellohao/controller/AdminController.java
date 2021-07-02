@@ -55,6 +55,7 @@ public class AdminController {
 
     @RequestMapping(value = "/goadmin")
     public String goadmin1(HttpSession session, Model model, HttpServletRequest request) {
+        Config config = configService.getSourceype();
         User user = (User) session.getAttribute("user");
         UploadConfig uploadConfig = uploadConfigService.getUpdateConfig();
         Integer usermemory = imgService.getusermemory(user.getId());
@@ -71,7 +72,7 @@ public class AdminController {
             model.addAttribute("levels", user.getLevel());
             model.addAttribute("username", user.getUsername());
             model.addAttribute("api", uploadConfig.getApi());
-
+            model.addAttribute("config", config);
             model.addAttribute("memory",u.getMemory());//单位M
             if(usermemory==null){
                 model.addAttribute("usermemory", 0);//单位M
@@ -81,6 +82,7 @@ public class AdminController {
             }
             return "admin/index";
         }else{
+            System.out.println("重定向到首页");
             return "redirect:/";
         }
     }
@@ -108,7 +110,6 @@ public class AdminController {
         model.addAttribute("sysetmname",sysetmname);
         model.addAttribute("isarch", isarch);
         model.addAttribute("jdk", jdk);
-
         //空间大小
         UploadConfig uploadConfig = uploadConfigService.getUpdateConfig();
         Integer usermemory = imgService.getusermemory(u.getId());
@@ -131,7 +132,6 @@ public class AdminController {
                 model.addAttribute("usermemory", 0);//单位M
             }else{
                 float d = (float) (Math.round((usermemory/1024.0F) * 100.0) / 100.0);
-                //Print.Normal();
                 model.addAttribute("usermemory", d);//单位M
             }
         }
@@ -200,8 +200,6 @@ public class AdminController {
         return new PageResultBean<>(rolePageInfo.getTotal(), rolePageInfo.getList());
     }
 
-
-
     @RequestMapping(value = "/selectusertable")
     @ResponseBody
     public Map<String, Object> selectByFy12(HttpSession session, @RequestParam(required = false, defaultValue = "1") int page,
@@ -233,19 +231,12 @@ public class AdminController {
         Images images = imgService.selectByPrimaryKey(id);
         Keys key = keysService.selectKeys(sourcekey);
         Integer Sourcekey = GetCurrentSource.GetSource(u.getId());
-        Boolean b =false;
-        if(Sourcekey==5){
-            b =true;
-        }else{
-            b = StringUtils.doNull(Sourcekey,key);//判断对象是否有空值
-        }
-        if(b){
             ImgServiceImpl de = new ImgServiceImpl();
             if (key.getStorageType() == 1) {
                 de.delect(key, images.getImgname());
             } else if (key.getStorageType() == 2) {
                 de.delectOSS(key, images.getImgname());
-            } else if (key.getStorageType() == 3 || key.getStorageType() == 8) {
+            } else if (key.getStorageType() == 3) {
                 de.delectUSS(key, images.getImgname());
             } else if (key.getStorageType() == 4) {
                 de.delectKODO(key, images.getImgname());
@@ -255,6 +246,8 @@ public class AdminController {
                 de.delectCOS(key, images.getImgname());
             }else if (key.getStorageType() == 7) {
                 de.delectFTP(key, images.getImgname());
+            }else if (key.getStorageType() == 8) {
+                de.delectUFile(key, images.getImgname());
             }else {
                 System.err.println("未获取到对象存储参数，删除失败。");
             }
@@ -270,9 +263,6 @@ public class AdminController {
                 count = 0;
             }
             jsonObject.put("val", count);
-        }else{
-            jsonObject.put("val", 0);
-        }
         return jsonObject.toString();
     }
 
@@ -287,13 +277,6 @@ public class AdminController {
         Integer Sourcekey = GetCurrentSource.GetSource(u.getId());
         for (int i = 0; i < ids.length; i++) {
             Keys key = keysService.selectKeys(sources[i]);
-            Boolean b =false;
-            if(Sourcekey==5){
-                b =true;
-            }else{
-                b = StringUtils.doNull(Sourcekey,key);//判断对象是否有空值
-            }
-            if(b){
                 if (key.getStorageType() == 1) {
                     de.delect(key, imgnames[i]);
                 } else if (key.getStorageType() == 2) {
@@ -308,6 +291,8 @@ public class AdminController {
                     de.delectCOS(key, imgnames[i]);
                 }else if (key.getStorageType() == 7) {
                     de.delectFTP(key, imgnames[i]);
+                }else if (key.getStorageType() == 8) {
+                    de.delectUFile(key, imgnames[i]);
                 }else {
                     System.err.println("未获取到对象存储参数，删除失败。");
                 }
@@ -318,9 +303,6 @@ public class AdminController {
                     v = 1;
                     imgAndAlbumService.deleteImgAndAlbum(imgnames[i]);//关联表删除关于这张照片的所有记录
                 }
-            }else {
-                v = 0;
-            }
         }
         jsonObject.put("val", v);
         jsonObject.put("usercount", imgService.countimg(u.getId()));
@@ -358,7 +340,6 @@ public class AdminController {
             session.removeAttribute("user");
             session.invalidate();
         }
-        // -1 用户名重复
         return jsonArray.toString();
     }
     //进入api
@@ -372,7 +353,6 @@ public class AdminController {
         model.addAttribute("domain", config.getDomain());
         return "admin/api";
     }
-
 
     @PostMapping(value = "/kuorong")
     @ResponseBody

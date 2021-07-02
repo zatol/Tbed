@@ -55,10 +55,10 @@
             max-height: 130px;
             border-radius: 5px;
             box-shadow: 1px 2px 4px #999999;
-            transition: all 0.6s;
+            transition: all 0.3s;
         }
         .slt:hover{
-            transform: scale(1.2);
+            transform: scale(1.1);
         }
         .table>tbody>tr>td{
             border:0px;
@@ -173,7 +173,7 @@
                     <div class="btn-group">
                         <span style="margin-left: 20px;line-height: 36px;">存储源：</span>
                     </div>
-                    <div class="btn-group">
+                    <div class="btn-group" th:if=" ${level} gt '1'">
                         <select id="StorageType" class="form-control">
                             <option value="0">所有</option>
                             <option value="5">本地存储</option>
@@ -265,6 +265,11 @@
         fenye('/admin/selecttable',1);
     }
     function deleall() {
+        var rows = $("#table_server").bootstrapTable('getSelections');
+        if (rows.length == 0) {
+            layui.layer.msg('请先勾选要操作的图像。');
+            return;
+        }
         swal({
                 title: "确认删除选中图片？",
                 text: "删除后将无法恢复，请谨慎操作。",
@@ -276,10 +281,8 @@
             },
             function (isConfirm) {
                 if (isConfirm) {
-                    var rows = $("#table_server").bootstrapTable('getSelections');
                     if (rows.length == 0) {
-                        swal("请先勾选图片再删除", "目前未选中任何图片", "error");
-                        return;
+
                     } else {
                         var ids = new Array();
                         var sources = new Array();
@@ -450,7 +453,7 @@
                         if(kooltype==1){
                             var output = Mustache.render('<a style="cursor:pointer;" onclick="lookimgs('+rows.id+',\'{{&imgurl}}\')">{{imgurl}}<img class="slt" style="display: none;" id="imgs'+rows.id+'" src="{{imgurl}}" alt="" /></a>', view);
                         }else{
-                            var output = Mustache.render('<a style="cursor:pointer;"  onclick="lookimgs('+rows.id+',\'{{&imgurl}}\')"><img class="slt" id="imgs'+rows.id+'" src="{{imgurl}}" alt="" /></a>', view);
+                            var output = Mustache.render('<a style="cursor:pointer;"  onclick="lookimgs('+rows.id+',\'{{&imgurl}}\')"><img class="slt" id="imgs'+rows.id+'" src="{{imgurl}}" alt="" onerror="this.src=\'/img/img404.jpg\'" /></a>', view);
                         }
                         return output;
                     },

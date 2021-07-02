@@ -6,8 +6,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 
 @Configuration
@@ -35,11 +33,11 @@ public class WebAppConfig implements WebMvcConfigurer {
         //registry.addInterceptor(interceptorConfig).addPathPatterns("admin/**").excludePathPatterns("/login", "/register");
         registry.addInterceptor(interceptorConfigWeb).addPathPatterns("/**")
                 .excludePathPatterns("/static/**","/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg",
-                                        "/**/*.jpeg", "/**/*.gif", "/**/fonts/*", "/**/*.svg",
+                                        "/**/*.jpeg", "/**/*.gif", "/**/fonts/*", "/**/*.svg","/**/*.*",
                         "/clientupimg/**","/clientupurlimg/**","/clientlogin/**","/notices/**","/systemupdate/**","/getdomain/**",
                         "/getNoticeText/**","/getNotice/**","/addalbum/**","/addalbum/**","/SaveForAlbum/**","/TOALBUM*N/**","/TOALBUM*N/**");
-        registry.addInterceptor(interceptorConfig).addPathPatterns("/admin/**");
-        registry.addInterceptor(interceptorConfigTwo).addPathPatterns("/admin/root/**");
+        registry.addInterceptor(interceptorConfig).addPathPatterns("/admin/**").excludePathPatterns("/**/*.*");
+        registry.addInterceptor(interceptorConfigTwo).addPathPatterns("/admin/root/**").excludePathPatterns("/**/*.*");
 
 
 

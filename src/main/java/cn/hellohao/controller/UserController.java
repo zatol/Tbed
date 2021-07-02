@@ -169,19 +169,19 @@ public class UserController {
     public String exit(Model model, HttpServletRequest request, HttpServletResponse response, HttpSession session) {
         JSONObject jsonObject = new JSONObject();
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            Cookie c = null;
-            cookie.setPath("/");
-            if(cookie.getName().equals("Hellohao_UniqueUserKey")){
-                //cookie.setValue(null);
-                c = new Cookie("Hellohao_UniqueUserKey","");
-                c.setPath("/");
-                cookie.setMaxAge(0);//60*60*24*90
-                response.addCookie(c);
+        if(cookies!=null){
+            for (Cookie cookie : cookies) {
+                Cookie c = null;
+                cookie.setPath("/");
+                if(cookie.getName().equals("Hellohao_UniqueUserKey")){
+                    //cookie.setValue(null);
+                    c = new Cookie("Hellohao_UniqueUserKey","");
+                    c.setPath("/");
+                    cookie.setMaxAge(0);//60*60*24*90
+                    response.addCookie(c);
+                }
             }
-
         }
-
         //注销，移除session
         User user = (User) session.getAttribute("user");
         if (user.getEmail() != null && user.getPassword() != null) {

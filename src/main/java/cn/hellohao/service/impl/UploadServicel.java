@@ -1,5 +1,6 @@
 package cn.hellohao.service.impl;
 
+import cn.hellohao.controller.UpdateImgController;
 import cn.hellohao.dao.*;
 import cn.hellohao.pojo.*;
 import cn.hellohao.utils.*;
@@ -53,22 +54,12 @@ public class UploadServicel {
         Integer sourcekey = 0;
         Integer maxsize = 0;
         String userpath = "tourist";
-        Boolean b = false;
         String md5key = "";
-        FileInputStream fis = null;
+        //FileInputStream fis = null;
         File file = SetFiles.changeFile_new(multipartFile);
-        MultipartFile multipartFile2 =  null;
         try {
             md5key = DigestUtils.md5Hex(new FileInputStream(file));
-            InputStream inputStream = new FileInputStream(file);
-            multipartFile2 = new MockMultipartFile(file.getName(), inputStream);
-            fis = new FileInputStream(file);
-            byte[] bytes = new byte[3];
-            fis.read(bytes, 0, bytes.length);
-            String xxx = ImgUrlUtil.bytesToHexString(bytes);
-            xxx = xxx.toUpperCase();
-            if(fis!=null){fis.close();}
-            if(TypeDict.checkType(xxx).equals("0000")) {
+            if(!TypeDict.checkImgType(file)) {
                 msg.setCode("4000");
                 return msg;
             }
@@ -106,7 +97,8 @@ public class UploadServicel {
                 }
             }
         }
-        if (Integer.parseInt(Base64Encryption.decryptBASE64(upurlk)) != yzupdate()) {
+//        if (Integer.parseInt(Base64Encryption.decryptBASE64(upurlk)) != yzupdate()) {
+        if (!upurlk.equals(UpdateImgController.vu)) {
             msg.setCode("4003");
             return msg;
         }
@@ -133,15 +125,6 @@ public class UploadServicel {
             userpath = dateFormat.format(new Date());
         }
         Keys key = keysMapper.selectKeys(sourcekey);
-        if (sourcekey == 5) {
-            b = true;
-        } else {
-            b = StringUtils.doNull(sourcekey, key);
-        }
-        if (!b) {
-            msg.setCode("4001");
-            return msg;
-        }
         int tmp = (memory == -1 ? -2 : (usermemory / 1024));
         if (tmp >= memory) {
             msg.setCode("4005");
@@ -162,48 +145,53 @@ public class UploadServicel {
         Images img = new Images();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         for (Map.Entry<ReturnImage, Integer> entry : m.entrySet()) {
-            if (key.getStorageType() == 5) {
-                if (config.getDomain() != null) {
-                    jsonObject.put("imgurls", config.getDomain()  +"/"+ entry.getKey().getImgurl());
-                    jsonObject.put("imgnames", entry.getKey().getImgname());
-                    img.setImgurl(config.getDomain()  +"/"+ entry.getKey().getImgurl());
+            if(entry.getKey()!=null){
+                if (key.getStorageType() == 5) {
+                    if (config.getDomain() != null) {
+                        jsonObject.put("imgurls", config.getDomain()  +"/"+ entry.getKey().getImgurl());
+                        jsonObject.put("imgnames", entry.getKey().getImgname());
+                        img.setImgurl(config.getDomain()  +"/"+ entry.getKey().getImgurl());
+                    } else {
+                        jsonObject.put("imgurls", config.getDomain()  +"/"+ entry.getKey().getImgurl());
+                        jsonObject.put("imgnames", entry.getKey().getImgname());
+                        img.setImgurl("http://" + IPPortUtil.getLocalIP() + ":" + IPPortUtil.getLocalPort()  +"/"+ entry.getKey().getImgurl());//图片链接
+                    }
                 } else {
-                    jsonObject.put("imgurls", config.getDomain()  +"/"+ entry.getKey().getImgurl());
+                    jsonObject.put("imgurls", entry.getKey().getImgurl());
                     jsonObject.put("imgnames", entry.getKey().getImgname());
-                    img.setImgurl("http://" + IPPortUtil.getLocalIP() + ":" + IPPortUtil.getLocalPort()  +"/"+ entry.getKey().getImgurl());//图片链接
+                    img.setImgurl( entry.getKey().getImgurl());
                 }
-            } else {
-                jsonObject.put("imgurls", entry.getKey().getImgurl());
-                jsonObject.put("imgnames", entry.getKey().getImgname());
-                img.setImgurl( entry.getKey().getImgurl());
-            }
-            jsonArray.add(jsonObject);
-            img.setUpdatetime(df.format(new Date()));
-            img.setSource(key.getStorageType());
-            img.setUserid(u == null ? 0 : u.getId());
-            img.setSizes((entry.getValue()) / 1024);
-            if(uploadConfig.getUrltype()==2){
-                //img.setImgname(SetText.getSubString(entry.getKey().getImgurl(), "", ""));
-                String[] imgname = entry.getKey().getImgurl().split ("/");
-                String name = "";
-                for (int i = 0; i < imgname.length; i++) {
-                    if(i>2 && i!=imgname.length-1){
-                        name+=imgname[i]+"/";
+                jsonArray.add(jsonObject);
+                img.setUpdatetime(df.format(new Date()));
+                img.setSource(key.getStorageType());
+                img.setUserid(u == null ? 0 : u.getId());
+                img.setSizes((entry.getValue()) / 1024);
+                if(uploadConfig.getUrltype()==2){
+                    //img.setImgname(SetText.getSubString(entry.getKey().getImgurl(), "", ""));
+                    String[] imgname = entry.getKey().getImgurl().split ("/");
+                    String name = "";
+                    for (int i = 0; i < imgname.length; i++) {
+                        if(i>2 && i!=imgname.length-1){
+                            name+=imgname[i]+"/";
+                        }
+                        if(i==imgname.length-1){
+                            name+=imgname[i];
+                        }
                     }
-                    if(i==imgname.length-1){
-                        name+=imgname[i];
-                    }
+                    img.setImgname(entry.getKey().getImgname());
+                }else{
+                    img.setImgname(SetText.getSubString(entry.getKey().getImgurl(), key.getRequestAddress() + "/", ""));
                 }
-                img.setImgname(entry.getKey().getImgname());
+                img.setImgtype(setday > 0 ? 1 : 0);
+                img.setAbnormal(userip);
+                img.setMd5key(md5key);
+                userMapper.insertimg(img);
+                long etime = System.currentTimeMillis();
+                Print.Normal("上传图片所用时长：" + String.valueOf(etime - stime) + "ms");
             }else{
-                img.setImgname(SetText.getSubString(entry.getKey().getImgurl(), key.getRequestAddress() + "/", ""));
+                msg.setCode("5001");
+                return msg;
             }
-            img.setImgtype(setday > 0 ? 1 : 0);
-            img.setAbnormal(userip);
-            img.setMd5key(md5key);
-            userMapper.insertimg(img);
-            long etime = System.currentTimeMillis();
-            Print.Normal("上传图片所用时长：" + String.valueOf(etime - stime) + "ms");
         }
         msg.setData(jsonArray);
         return msg;

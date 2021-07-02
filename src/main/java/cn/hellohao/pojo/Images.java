@@ -33,14 +33,13 @@ public class Images {
     @Length(min = 0, max = 10, message = "画廊密码不能超过10个字符")
     private String password;
     private Integer selecttype;
+    private String notes;
 
     public Images() {
         super();
     }
 
-    public Images(Integer id, String imgname, String imgurl, Integer userid, Integer sizes, String abnormal, Integer source,
-                  Integer imgtype, String updatetime, String username, Integer storageType, String starttime, String stoptime,
-                  String explains, String albumtitle, String password,String md5key,Integer selecttype) {
+    public Images(Integer id, String imgname, String imgurl, Integer userid, Integer sizes, String abnormal, Integer source, Integer imgtype, String updatetime, String username, Integer storageType, String starttime, String stoptime, @Length(min = 1, max = 100, message = "图片描述不得超过100个字符") String explains, String md5key, String albumtitle,String password, Integer selecttype, String notes) {
         this.id = id;
         this.imgname = imgname;
         this.imgurl = imgurl;
@@ -55,10 +54,11 @@ public class Images {
         this.starttime = starttime;
         this.stoptime = stoptime;
         this.explains = explains;
+        this.md5key = md5key;
         this.albumtitle = albumtitle;
         this.password = password;
-        this.md5key = md5key;
         this.selecttype = selecttype;
+        this.notes = notes;
     }
 
     public Integer getId() {
@@ -173,6 +173,14 @@ public class Images {
         this.explains = explains;
     }
 
+    public String getMd5key() {
+        return md5key;
+    }
+
+    public void setMd5key(String md5key) {
+        this.md5key = md5key;
+    }
+
     public String getAlbumtitle() {
         return albumtitle;
     }
@@ -189,14 +197,6 @@ public class Images {
         this.password = password;
     }
 
-    public String getMd5key() {
-        return md5key;
-    }
-
-    public void setMd5key(String md5key) {
-        this.md5key = md5key;
-    }
-
     public Integer getSelecttype() {
         return selecttype;
     }
@@ -205,8 +205,13 @@ public class Images {
         this.selecttype = selecttype;
     }
 
+    public String getNotes() {
+        return notes;
+    }
 
-
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }
 	
 		

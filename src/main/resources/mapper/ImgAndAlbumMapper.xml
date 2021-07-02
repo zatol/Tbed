@@ -28,7 +28,7 @@
     </select>
 
     <insert id="addImgAndAlbum" parameterType="cn.hellohao.pojo.ImgAndAlbum">
-        insert into `imgandalbum` (imgname,albumkey) values (#{imgname},#{albumkey})
+        insert into `imgandalbum` (imgname,albumkey,notes) values (#{imgname},#{albumkey},#{notes})
     </insert>
 
     <delete id="deleteImgAndAlbum" parameterType="string">

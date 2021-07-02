@@ -107,6 +107,17 @@ public class ImgServiceImpl implements ImgService {
             e.printStackTrace();
         }
     }
+
+    public void delectUFile(Keys key, String fileName) {
+        UpYun upyun = new UpYun(key.getBucketname(), key.getAccessKey(), key.getAccessSecret());
+        try {
+            boolean result = upyun.deleteFile(fileName, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UpException e) {
+            e.printStackTrace();
+        }
+    }
     public void delectKODO(Keys key, String fileName) {
         Configuration cfg;
         if(key.getEndpoint().equals("1")){cfg = new Configuration(Zone.zone0());}

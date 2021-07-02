@@ -188,27 +188,11 @@
                     if(imgList.length==0){
                         $('#imgLose').css('display','block');
                     }else{
-                        //$('#albumtitle').text(imgList[0].albumtitle);
-                        //backurl = imgList[0].imgurl;
-                        //setback();
                         for(var i = 0;i<imgList.length;i++){
                             var datasize = "";
-                            // var img = new Image();
-                            // img.src = imgList[i].imgurl;
-                            // // 如果图片被缓存，则直接返回缓存数据
-                            // if(img.complete){
-                            //     datasize = img.width+'x'+img.height;
-                            // }else{
-                            //     // 完全加载完毕的事件
-                            //     img.onload = function(){
-                            //       datasize = img.width+'x'+img.height;
-                            //     }
-                            // }
-                            //1280x853
                             body+='<div class="grid__item" data-size="9999x9999"> <a href="'+imgList[i].imgurl+'" class="img-wrap"><img src="'+imgList[i].imgurl+'" alt="'+imgList[i].imgurl+'" />\n' +
-                                '<div class="description description--grid" style="display: none;">'+imgList[i].explains+'</div>\n' +
+                                '<div class="description description--grid" style="display: none;">'+imgList[i].notes+'</div>\n' +
                                 '</a> </div>';
-                            //$('#AlbumList').append(body);
                         }
                         $('#AlbumList').html(body);
                         imgRendering();

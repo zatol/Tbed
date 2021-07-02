@@ -3,6 +3,7 @@ function d(val) {return val+parseInt('3e7',16);}
 (function( $ ){
     // 当domReady的时候开始初始化
     var d = 0;
+    var temp = 0;
     $(function() {
         var $wrap = $('#uploader'),
 
@@ -168,7 +169,15 @@ function d(val) {return val+parseInt('3e7',16);}
                     extensions:suffix,
                     mimeTypes: 'image/*'
                 },
+                thumb:{
 
+                    // 是否允许裁剪。
+                    crop: true,
+
+                    // 为空的话则保留原有图片格式。
+                    // 否则强制转换成指定的类型。
+                    type: 'image/jpeg'
+                },
                 // 禁掉全局的拖拽功能。这样不会出现图片拖进页面的时候，把图片打开。
                 disableGlobalDnd: true,
                 duplicate:true,
@@ -179,7 +188,7 @@ function d(val) {return val+parseInt('3e7',16);}
 
         // 拖拽时不接受 js, txt 文件。
         uploader.on( 'dndAccept', function( items ) {
-            console.log(items)
+            //console.log(items)
             var denied = false,
                 len = items.length,
                 i = 0,
@@ -223,7 +232,7 @@ function d(val) {return val+parseInt('3e7',16);}
             } else if(response.code==4003){
                 layui.use('layer', function () {
                     layer = layui.layer;
-                    layer.msg("非法调用，请刷新页面后重试", {icon: 2});
+                    layer.msg("非法调用，请Ctrl+F5刷新页面后重试", {icon: 2});
                 });
             }else if(response.code=='4006'){
                 layui.use('layer', function () {
@@ -235,22 +244,32 @@ function d(val) {return val+parseInt('3e7',16);}
                     layer = layui.layer;
                     layer.msg("你目前不能上传图片,请联系管理员", {icon: 2});
                 });
+            }else if(response.code=='5001'){
+                layui.use('layer', function () {
+                    layer = layui.layer;
+                    layer.msg("服务器内部错误:5001", {icon: 2});
+                });
             }else{
-                $("#updateurl").show();
+                if(response.data!=null){
+                    $("#updateurl").show();
+                    $("#W"+file.id).hide();
+                    $("#"+file.id).append( '<span class="success"></span>' );
                     arr_url +=response.data[0].imgurls + '\r\n';
-                if(theme==1){
-                    //arr_url += response.data[0].imgurls + '\r\n';
-                    arr_markdown += '!['+response.data[0].imgnames+'](' + response.data[0].imgurls + ')\r\n';
-                    arr_html += '<img src="' + response.data[0].imgurls + '" alt="'+response.data[0].imgnames+'" title="'+response.data[0].imgnames+'" /> \r\n';
-                    arr_ddcode +='[img]'+response.data[0].imgurls+'[/img]';
-                }else{
-                    arr_imgurl += '<li onclick="copyimgurl(this)" class="copyimgurl"><span class="line"></span><i class="icon fab fa-gg"></i><p class="fontstyle" >'+response.data[0].imgurls + '</p></li>';
-                    arr_markdown += '<li onclick="copyimgurl(this)" class="copyimgurl "><span class="line"></span><i class="icon fab fa-gg"></i><p class="fontstyle">'+'!['+response.data[0].imgnames+'](' + response.data[0].imgurls + ')</p></li>';
-                    arr_html += '<li onclick="copyimgurl(this)" class="copyimgurl "><span class="line"></span><i class="icon fab fa-gg"></i><p class="fontstyle">'+'&lt;img src="' + response.data[0].imgurls + '" alt="'+response.data[0].imgnames+'" /&gt; </p></li>';
-                    arr_ddcode +='<li onclick="copyimgurl(this)" class="copyimgurl"><span class="line"></span><i class="icon fab fa-gg"></i><p class="fontstyle">'+'[img]'+response.data[0].imgurls+'[/img]</p></li>';
+                    if(theme==1){
+                        //arr_url += response.data[0].imgurls + '\r\n';
+                        arr_markdown += '!['+response.data[0].imgnames+'](' + response.data[0].imgurls + ')\r\n';
+                        arr_html += '<img src="' + response.data[0].imgurls + '" alt="'+response.data[0].imgnames+'" title="'+response.data[0].imgnames+'" /> \r\n';
+                        arr_ddcode +='[img]'+response.data[0].imgurls+'[/img]';
+                    }else{
+                        //<i class="icon fab fa-gg"></i>
+                        arr_imgurl += '<li onclick="copyimgurl(this)" class="copyimgurl"><span class="line"></span><i class="iconimg" style="background-image: url('+response.data[0].imgurls+')"></i><p class="fontstyle" >'+response.data[0].imgurls + '</p></li>';
+                        arr_markdown += '<li onclick="copyimgurl(this)" class="copyimgurl "><span class="line"></span><i class="iconimg" style="background-image: url('+response.data[0].imgurls+')"></i><p class="fontstyle">'+'!['+response.data[0].imgnames+'](' + response.data[0].imgurls + ')</p></li>';
+                        arr_html += '<li onclick="copyimgurl(this)" class="copyimgurl "><span class="line"></span><i class="iconimg" style="background-image: url('+response.data[0].imgurls+')"></i><p class="fontstyle">'+'&lt;img src="' + response.data[0].imgurls + '" alt="'+response.data[0].imgnames+'" /&gt; </p></li>';
+                        arr_ddcode +='<li onclick="copyimgurl(this)" class="copyimgurl"><span class="line"></span><i class="iconimg" style="background-image: url('+response.data[0].imgurls+')"></i><p class="fontstyle">'+'[img]'+response.data[0].imgurls+'[/img]</p></li>';
+                    }
                 }
-
             }
+
             if(theme==1){
                 if(urltypes==1){
                     $("#urls").text(arr_url);
@@ -262,6 +281,10 @@ function d(val) {return val+parseInt('3e7',16);}
                     $("#urls").text(arr_ddcode);
                 }
             }else{
+                $("#urllist li").each(function(){
+                    $(this).removeClass("layui-this");
+                });
+                $('#urls').addClass("layui-this")
                 if(urltypes==1){
                     $("#imgurls").html(arr_imgurl);
                 }else if(urltypes==2){
@@ -272,8 +295,8 @@ function d(val) {return val+parseInt('3e7',16);}
                     $("#imgurls").html(arr_ddcode);
                 }
             }
-
         });
+
 
         // 文件上传失败，显示上传出错
         uploader.on( 'uploadError', function( file ) {
@@ -310,14 +333,15 @@ function d(val) {return val+parseInt('3e7',16);}
             $('#urlsc').html('<a id="jyupdate">已禁止游客上传,请登陆后使用</a>')
             return;
         }
+
         // 当有文件添加进来时执行，负责view的创建
         function addFile( file ) {
+            temp = file.id;
             var $li = $( '<li id="' + file.id + '">' +
                     '<p class="title">' + file.name + '</p>' +
                     '<p class="imgWrap"></p>'+
                     '<p class="progress"><span></span></p>' +
                     '</li>' ),
-
                 $btns = $('<div class="file-panel">' +
                     '<span class="cancel">删除</span>' +
                     '<span class="rotateRight">向右旋转</span>' +
@@ -400,9 +424,10 @@ function d(val) {return val+parseInt('3e7',16);}
                     $info.remove();
                     $prgress.css('display', 'block');
                 } else if ( cur === 'complete' ) {
-                    $li.append( '<span class="success"></span>' );
+                    $li.append( '<span class="warning"></span>' );
+                }else{
+                    $li.append( '<span class="warning"></span>' );
                 }
-
                 $li.removeClass( 'state-' + prev ).addClass( 'state-' + cur );
             });
 
@@ -639,7 +664,8 @@ function d(val) {return val+parseInt('3e7',16);}
                     break;
 
                 case 'startUpload':
-                    uploader.options.formData.upurlk = GetDateStr(new Date());
+                    // uploader.options.formData.upurlk = GetDateStr(new Date());
+                    uploader.options.formData.upurlk = $('#vu').val();
                     setState( 'uploading' );
                     break;
 
@@ -694,7 +720,7 @@ function d(val) {return val+parseInt('3e7',16);}
         } );
 
         $info.on( 'click', '.ignore', function() {
-            alert( 'todo' );
+            //alert( 'todo' );
         } );
 
         $upload.addClass( 'state-' + state );
@@ -710,4 +736,8 @@ function GetDateStr(dd) {
     //var d = dd.getHours();
     //var e = dd.getMinutes();
     return $.base64.encode(d((a+b+c))+"");
+}
+
+function tests(file) {
+alert(file.source.source)
 }

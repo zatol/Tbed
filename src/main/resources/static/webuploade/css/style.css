@@ -138,6 +138,8 @@ table {
     list-style: none;
     margin: 0;
     padding: 0;
+    max-height: 300px;
+    overflow: auto;
 }
 
 #uploader .filelist:after {
@@ -284,7 +286,16 @@ table {
     z-index: 200;
     background: url(../images/success.png) no-repeat right bottom;
 }
-
+.warning {
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 40px;
+    width: 100%;
+    z-index: 200;
+    background: url(../images/warning.png) no-repeat right bottom;
+}
 #uploader .filelist div.file-panel {
     position: absolute;
     height: 0;

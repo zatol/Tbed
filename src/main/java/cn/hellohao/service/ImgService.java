@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import cn.hellohao.pojo.Images;
+import org.springframework.stereotype.Service;
 
+@Service
 public interface ImgService {
     List<Images> selectimg(Images images);
 

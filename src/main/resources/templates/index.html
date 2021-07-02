@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 	<meta name="keywords" th:content="${config.getWebkeywords()}" />
 	<meta name="description" th:content="${config.getWebms()}" />
 	<meta name="author" content="Hellohao" />
@@ -28,11 +28,14 @@
 		a:hover {
 			text-decoration: none;
 		}
-		#usersrc a{
+/*		#usersrc a{
 			transition: all 0.6s;
 		}
 		#usersrc a:hover{
 			transform: scale(1.4);
+		}*/
+		#usersrc{
+			cursor: default;
 		}
 		.goupdate {
 			text-decoration: none;
@@ -371,25 +374,7 @@
 		</div>
 	</div>
 </div>
-<!--	赞助商-->
-<div class="md-modal md-effect-3" id="modal-2">
-	<div class="md-content">
-		<h3>服务赞助商</h3>
-		<div>
-			<p></p>
-			<div class="form loginBox">
-				<a href="#" target="_blank">
-					<img style="max-width: 33.3%;" src="" />
-					<!--						https://hellohao-cloud.oss-cn-beijing.aliyuncs.com/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E8%B5%9E%E5%8A%A9logo/WechatIMG172L.png-->
-				</a>
-				<a href="#" target="_blank">
-					<img style="max-width: 33.3%;" src="" />
-					<!--						https://hellohao-cloud.oss-cn-beijing.aliyuncs.com/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E8%B5%9E%E5%8A%A9logo/%E5%8F%88%E6%8B%8D%E4%BA%91_logo2.png-->
-				</a>
-			</div>
-		</div>
-	</div>
-</div>
+
 <div class="md-overlay"></div>
 <script type="text/javascript" th:src="@{js/jquery.js}"></script>
 <script th:src="@{/static/js/login-register.js}"></script>
@@ -472,10 +457,6 @@
 		{arr2.push('<h2>'+arr[i]+'</h2>');}
 		$.wordrotator_words =arr2;
 		setInterval(clock,1000);//首页动态时间
-		if(backtype==1){
-			$(".bg-container-static").css('background', 'url('+[[${config.getBackground2()}]]+') no-repeat');
-			$(".bg-container-static").css({'background-position':'50% 50%','height':'100%','width':'100%','overflow':'hidden','background-size':'cover'});
-		}
 		//设置页面资料
 		var webname = [[${config.getWebname()}]];
 		var explain = [[${config.getExplain()}]];
@@ -521,6 +502,7 @@
 			$('#dier').removeClass('contact-section');
 			$('#dier').css("background","rgba(38,38,38,0.7)");//style="background: rgba(38,38,38,0.7);"
 		}
+
 	})(jQuery);
 
 	$('#mpanel1').slideVerify({
@@ -749,6 +731,6 @@
 
 
 </script>
-
+<input th:value="${vu}" type="hidden" id="vu" />
 </body>
 </html>

@@ -5,19 +5,16 @@ import cn.hellohao.pojo.ReturnImage;
 import cn.hellohao.pojo.UploadConfig;
 import cn.hellohao.utils.*;
 import com.UpYun;
-import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.ObjectMetadata;
-import com.upyun.UpException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 @Service
-public class USSImageupload {
-    static UpYun upyun;
+public class UFileImageupload {
+    static UpYun uFile;
     static Keys key;
 
     public Map<ReturnImage, Integer> ImageuploadUSS(Map<String, MultipartFile> fileMap, String username,
@@ -27,14 +24,15 @@ public class USSImageupload {
             Map<ReturnImage, Integer> ImgUrl = new HashMap<>();
             ObjectMetadata meta = new ObjectMetadata();
             meta.setHeader("Content-Disposition", "inline");
+
             try {
                 for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
                     String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase().substring(0,5);//生成一个没有-的uuid，然后取前5位
                     java.text.DateFormat format1 = new java.text.SimpleDateFormat("MMddhhmmss");
                     String times = format1.format(new Date());
                     file = SetFiles.changeFile(entry.getValue());
-                    upyun.setContentMD5(UpYun.md5(file));
-                    boolean result = upyun.writeFile(username + "/" + uuid+times + "." + entry.getKey(), file, true);
+                    uFile.setContentMD5(UpYun.md5(file));
+                    boolean result = uFile.writeFile(username + "/" + uuid+times + "." + entry.getKey(), file, true);
                     if(result){
                         ReturnImage returnImage = new ReturnImage();
                         returnImage.setImgname(username + "/" + uuid+times + "." + entry.getKey());//entry.getValue().getOriginalFilename()
@@ -48,8 +46,7 @@ public class USSImageupload {
                         System.err.println("上传失败");
                     }
                 }
-            }catch (Exception e){
-                e.printStackTrace();
+            }catch(Exception e){
                 ImgUrl.put(null, 500);
             }
             return ImgUrl;
@@ -57,36 +54,50 @@ public class USSImageupload {
             Map<ReturnImage, Integer> ImgUrl = new HashMap<>();
             ObjectMetadata meta = new ObjectMetadata();
             meta.setHeader("Content-Disposition", "inline");
-            try {
-                for (Map.Entry<String, String> entry : fileMap2.entrySet()) {
-                    String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase().substring(0,5);//生成一个没有-的uuid，然后取前5位
-                    java.text.DateFormat format1 = new java.text.SimpleDateFormat("MMddhhmmss");
-                    String times = format1.format(new Date());
-                    String imgurl = entry.getValue();
-                    upyun.setContentMD5(UpYun.md5(new File(imgurl)));
-                    boolean result = upyun.writeFile(username + "/" + uuid+times + "." + entry.getKey(), new File(imgurl), true);
-                    if(result){
-                        ReturnImage returnImage = new ReturnImage();
-                        returnImage.setImgurl(key.getRequestAddress() + "/" + username + "/" + uuid+times + "." + entry.getKey());
-                        ImgUrl.put(returnImage, ImgUrlUtil.getFileSize2(new File(imgurl)));
-                        if(setday>0) {
-                            String deleimg = DateUtils.plusDay(setday);
-                            DeleImg.charu(username + "/" + uuid + times + "." + entry.getKey() + "|" + deleimg + "|" + "3");
-                        }
-                    }else{
-                        Print.warning("上传失败");
-                    }
-                    new File(imgurl).delete();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-                ImgUrl.put(null, 500);
-            }
+
+           try {
+               for (Map.Entry<String, String> entry : fileMap2.entrySet()) {
+                   String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase().substring(0,5);//生成一个没有-的uuid，然后取前5位
+                   java.text.DateFormat format1 = new java.text.SimpleDateFormat("MMddhhmmss");
+                   String times = format1.format(new Date());
+                   String imgurl = entry.getValue();
+                   uFile.setContentMD5(UpYun.md5(new File(imgurl)));
+                   boolean result = uFile.writeFile(username + "/" + uuid+times + "." + entry.getKey(), new File(imgurl), true);
+                   if(result){
+                       ReturnImage returnImage = new ReturnImage();
+                       returnImage.setImgurl(key.getRequestAddress() + "/" + username + "/" + uuid+times + "." + entry.getKey());
+                       ImgUrl.put(returnImage, ImgUrlUtil.getFileSize2(new File(imgurl)));
+                       if(setday>0) {
+                           String deleimg = DateUtils.plusDay(setday);
+                           DeleImg.charu(username + "/" + uuid + times + "." + entry.getKey() + "|" + deleimg + "|" + "3");
+                       }
+                   }else{
+                       Print.warning("上传失败");
+                   }
+                   new File(imgurl).delete();
+               }
+           }catch(Exception e){
+               ImgUrl.put(null, 500);
+           }
             return ImgUrl;
         }
+
     }
 
-    //初始化
+//    // 转换文件方法
+//    private File changeFile(MultipartFile multipartFile) throws Exception {
+//        // 获取文件名
+//        String fileName = multipartFile.getName();//getOriginalFilename
+//        // 获取文件后缀
+//        String prefix = fileName.substring(fileName.lastIndexOf("."));
+//        // todo 修改临时文件文件名
+//        File file = File.createTempFile(fileName, prefix);
+//        // MultipartFile to File
+//        multipartFile.transferTo(file);
+//        return file;
+//    }
+
+    //ufile初始化
     public static Integer Initialize(Keys k) {
         int ret = -1;
         if(k.getEndpoint()!=null && k.getAccessSecret()!=null
@@ -95,14 +106,14 @@ public class USSImageupload {
                     && !k.getBucketname().equals("") && !k.getRequestAddress().equals("") ) {
                 // 初始化
                 // 创建UpYun实例。
-                upyun = new UpYun(k.getBucketname(), k.getAccessKey(), k.getAccessSecret());
+                uFile = new UpYun(k.getBucketname(), k.getAccessKey(), k.getAccessSecret());
                 List<UpYun.FolderItem> items = null;
                 try {
-                   items = upyun.readDir("/",null);
+                   items = uFile.readDir("/",null);
                     key = k;
                     ret = 1;
                 } catch (Exception e) {
-                    System.out.println("USS - Waiting for configuration");
+                    System.out.println("UFile - Waiting for configuration");
                     ret = -1;
                 }
             }
@@ -130,8 +141,8 @@ public class USSImageupload {
             ReturnImage returnImage = new ReturnImage();
             if(entry.getValue().getSize()/1024<=uploadConfig.getFilesizeuser()*1024){
                 // 例2：采用数据流模式上传文件（节省内存）,自动创建父级目录
-                upyun.setContentMD5(UpYun.md5(file));
-                boolean result = upyun.writeFile(username + "/" + uuid+times + "." + entry.getKey(), file, true);
+                uFile.setContentMD5(UpYun.md5(file));
+                boolean result = uFile.writeFile(username + "/" + uuid+times + "." + entry.getKey(), file, true);
                 if(result){
                     returnImage.setImgname(entry.getValue().getOriginalFilename());
                     returnImage.setImgurl(key.getRequestAddress() + "/" + username + "/" + uuid+times + "." + entry.getKey());
